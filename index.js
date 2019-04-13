@@ -2,7 +2,7 @@
 
 var chalk = require('chalk');
 var Table = require('cli-table');
-var cardinal = require('cardinal');
+var highlight = require('cli-highlight');
 var emoji = require('node-emoji');
 const ansiEscapes = require('ansi-escapes');
 const supportsHyperlinks = require('supports-hyperlinks');
@@ -22,8 +22,8 @@ var TAB_ALLOWED_CHARACTERS = ['\t'];
 // into \n in marked's lexer- preprocessing step. So \r is safe to use
 // to indicate a hard (non-reflowed) return.
 var HARD_RETURN = '\r',
-    HARD_RETURN_RE = new RegExp(HARD_RETURN),
-    HARD_RETURN_GFM_RE = new RegExp(HARD_RETURN + '|<br />');
+  HARD_RETURN_RE = new RegExp(HARD_RETURN),
+  HARD_RETURN_GFM_RE = new RegExp(HARD_RETURN + '|<br />');
 
 var defaultOptions = {
   code: chalk.yellow,
@@ -75,14 +75,103 @@ function fixHardReturn(text, reflow) {
   return reflow ? text.replace(HARD_RETURN, /\n/g) : text;
 }
 
-Renderer.prototype.text = function (text) {
+Renderer.prototype.text = function(text) {
   return this.o.text(text);
 };
 
 Renderer.prototype.code = function(code, lang, escaped) {
+  highlight.DEFAULT_THEME = {
+    //keyword in a regular Algol-style language
+    keyword: chalk.red,
+    //built-in or library object (constant, class, function)
+    built_in: chalk.yellow,
+    //user-defined type in a language with first-class syntactically significant types, like
+    //Haskell
+    type: chalk.yellow,
+    //special identifier for a built-in value ("true", "false", "null")
+    literal: chalk.magenta,
+    //number, including units and modifiers, if any.
+    number: chalk.magenta,
+    //literal regular expression
+    regexp: chalk.magenta,
+    //literal string, character
+    string: chalk.yellow,
+    //parsed section inside a literal string
+    subst: chalk.white,
+    //symbolic constant, interned string, goto label
+    symbol: chalk.cyan,
+    //class or class-level declaration (interfaces, traits, modules, etc)
+    class: chalk.white,
+    //function or method declaration
+    function: chalk.yellow,
+    //name of a class or a function at the place of declaration
+    title: chalk.greenBright,
+    //block of function arguments (parameters) at the place of declaration
+    params: chalk.white,
+    //comment
+    comment: chalk.grey,
+    //documentation markup within comments
+    doctag: chalk.white,
+    //flags, modifiers, annotations, processing instructions, preprocessor directive, etc
+    meta: chalk.grey,
+    //keyword or built-in within meta construct
+    'meta-keyword': chalk.grey,
+    //string within meta construct
+    'meta-string': chalk.grey,
+    //heading of a section in a config file, heading in text markup
+    section: chalk.greenBright,
+    //XML/HTML tag
+    tag: chalk.white,
+    //name of an XML tag, the first word in an s-expression
+    name: chalk.red,
+    //s-expression name from the language standard library
+    'builtin-name': chalk.yellow,
+    //name of an attribute with no language defined semantics (keys in JSON, setting names in
+    //.ini), also sub-attribute within another highlighted object, like XML tag
+    attr: chalk.red,
+    //name of an attribute followed by a structured value part, like CSS properties
+    attribute: chalk.cyan,
+    //variable in a config or a template file, environment var expansion in a script
+    variable: chalk.yellow,
+    //list item bullet in text markup
+    bullet: chalk.magenta,
+    //code block in text markup
+    code: chalk.greenBright,
+    //emphasis in text markup
+    emphasis: chalk.italic.grey,
+    //strong emphasis in text markup
+    strong: chalk.bold.grey,
+    //mathematical formula in text markup
+    formula: chalk.white,
+    //hyperlink in text markup
+    link: chalk.magenta,
+    //quotation in text markup
+    quote: chalk.magenta,
+    //tag selector in CSS
+    'selector-tag': chalk.red,
+    //#id selector in CSS
+    'selector-id': chalk.yellow,
+    //.class selector in CSS
+    'selector-class': chalk.greenBright,
+    //[attr] selector in CSS
+    'selector-attr': chalk.yellow,
+    //:pseudo selector in CSS
+    'selector-pseudo': chalk.yellow,
+    //tag of a template language
+    'template-tag': chalk.white,
+    //variable in a template language
+    'template-variable': chalk.yellow,
+    //added or changed line in a diff
+    addition: chalk.yellow,
+    //deleted line in a diff
+    deletion: chalk.grey,
+    //things not matched by any token
+    default: chalk.white,
+  }
+  console.log(highlight.DEFAULT_THEME.quote)
   return section(indentify(
     this.tab,
-    highlight(code, lang, this.o, this.highlightOptions)
+    highlight.highlight(code, lang, this.o, this.highlightOptions)
   ));
 };
 
@@ -98,7 +187,7 @@ Renderer.prototype.heading = function(text, level, raw) {
   text = this.transform(text);
 
   var prefix = this.o.showSectionPrefix ?
-    (new Array(level + 1)).join('#')+' ' : '';
+    (new Array(level + 1)).join('#') + ' ' : '';
   text = prefix + text;
   if (this.o.reflowText) {
     text = reflowText(text, this.o.width, this.options.gfm);
@@ -139,10 +228,10 @@ Renderer.prototype.paragraph = function(text) {
 
 Renderer.prototype.table = function(header, body) {
   var table = new Table(Object.assign({}, {
-      head: generateTableRow(header)[0]
+    head: generateTableRow(header)[0]
   }, this.tableSettings));
 
-  generateTableRow(body, this.transform).forEach(function (row) {
+  generateTableRow(body, this.transform).forEach(function(row) {
     table.push(row);
   });
   return section(this.o.table(table.toString()));
@@ -199,22 +288,22 @@ Renderer.prototype.link = function(href, title, text) {
 
   if (supportsHyperlinks.stdout) {
     let link = ''
-    if(text){
+    if (text) {
       link = this.o.href(this.emoji(text))
-    }else{
+    } else {
       link = this.o.href(href)
     }
     out = ansiEscapes.link(link, href);
-  }else{
+  } else {
     if (hasText) out += this.emoji(text) + ' (';
-    out +=  this.o.href(href);
+    out += this.o.href(href);
     if (hasText) out += ')';
   }
   return this.o.link(out);
 };
 
 Renderer.prototype.image = function(href, title, text) {
-  var out = '!['+text;
+  var out = '![' + text;
   if (title) out += ' – ' + title;
   return out + '](' + href + ')\n';
 };
@@ -223,14 +312,14 @@ module.exports = Renderer;
 
 // Munge \n's and spaces in "text" so that the number of
 // characters between \n's is less than or equal to "width".
-function reflowText (text, width, gfm) {
+function reflowText(text, width, gfm) {
   // Hard break was inserted by Renderer.prototype.br or is
   // <br /> when gfm is true
   var splitRe = gfm ? HARD_RETURN_GFM_RE : HARD_RETURN_RE,
-      sections = text.split(splitRe),
-      reflowed = [];
+    sections = text.split(splitRe),
+    reflowed = [];
 
-  sections.forEach(function (section) {
+  sections.forEach(function(section) {
     // Split the section by escape codes so that we can
     // deal with them separately.
     var fragments = section.split(/(\u001b\[(?:\d{1,3})(?:;\d{1,3})*m)/g);
@@ -320,7 +409,7 @@ function reflowText (text, width, gfm) {
   return reflowed.join('\n');
 }
 
-function indentLines (indent, text) {
+function indentLines(indent, text) {
   return text.replace(/(^|\n)(.+)/g, '$1' + indent + '$2');
 }
 
@@ -334,29 +423,30 @@ var NUMBERED_POINT_REGEX = '\\d+\\.';
 var POINT_REGEX = '(?:' + [BULLET_POINT_REGEX, NUMBERED_POINT_REGEX].join('|') + ')';
 
 // Prevents nested lists from joining their parent list's last line
-function fixNestedLists (body, indent) {
+function fixNestedLists(body, indent) {
   var regex = new RegExp('' +
     '(\\S(?: |  )?)' + // Last char of current point, plus one or two spaces
-                       // to allow trailing spaces
+    // to allow trailing spaces
     '((?:' + indent + ')+)' + // Indentation of sub point
     '(' + POINT_REGEX + '(?:.*)+)$', 'gm'); // Body of subpoint
   return body.replace(regex, '$1\n' + indent + '$2$3');
 }
 
-var isPointedLine = function (line, indent) {
+var isPointedLine = function(line, indent) {
   return line.match('^(?:' + indent + ')*' + POINT_REGEX);
 }
 
-function toSpaces (str) {
+function toSpaces(str) {
   return (' ').repeat(str.length);
 }
 
 var BULLET_POINT = '* ';
-function bulletPointLine (indent, line) {
+
+function bulletPointLine(indent, line) {
   return isPointedLine(line, indent) ? line : toSpaces(BULLET_POINT) + line;
 }
 
-function bulletPointLines (lines, indent) {
+function bulletPointLines(lines, indent) {
   var transform = bulletPointLine.bind(null, indent);
   return lines.split('\n')
     .filter(identity)
@@ -364,20 +454,21 @@ function bulletPointLines (lines, indent) {
     .join('\n');
 }
 
-var numberedPoint = function (n) {
-  return  n + '. ';
+var numberedPoint = function(n) {
+  return n + '. ';
 };
-function numberedLine (indent, line, num) {
+
+function numberedLine(indent, line, num) {
   return isPointedLine(line, indent) ? {
-    num: num+1,
-    line: line.replace(BULLET_POINT, numberedPoint(num+1))
+    num: num + 1,
+    line: line.replace(BULLET_POINT, numberedPoint(num + 1))
   } : {
     num: num,
     line: toSpaces(numberedPoint(num)) + line
   };
 }
 
-function numberedLines (lines, indent) {
+function numberedLines(lines, indent) {
   var transform = numberedLine.bind(null, indent);
   let num = 0;
   return lines.split('\n')
@@ -398,29 +489,19 @@ function list(body, ordered, indent) {
   return body;
 }
 
-function section (text) {
+function section(text) {
   return text + '\n\n';
 }
 
 function highlight(code, lang, opts, hightlightOpts) {
-  if (!chalk.enabled) return code;
-
   var style = opts.code;
-
   code = fixHardReturn(code, opts.reflowText);
-  if (lang !== 'javascript' && lang !== 'js') {
-    return style(code);
-  }
-
-  try {
-    return cardinal.highlight(code, hightlightOpts);
-  } catch (e) {
-    return style(code);
-  }
+  highlightOpts.language = lang;
+  return highlight(code, hightlightOpts);
 }
 
 function insertEmojis(text) {
-  return text.replace(/:([A-Za-z0-9_\-\+]+?):/g, function (emojiString) {
+  return text.replace(/:([A-Za-z0-9_\-\+]+?):/g, function(emojiString) {
     var emojiSign = emoji.get(emojiString);
     if (!emojiSign) return emojiString;
     return emojiSign + ' ';
@@ -432,7 +513,7 @@ function hr(inputHrStr, length) {
   return (new Array(length)).join(inputHrStr);
 }
 
-function undoColon (str) {
+function undoColon(str) {
   return str.replace(COLON_REPLACER_REGEXP, ':');
 }
 
@@ -442,7 +523,7 @@ function generateTableRow(text, escape) {
   var lines = escape(text).split('\n');
 
   var data = [];
-  lines.forEach(function (line) {
+  lines.forEach(function(line) {
     if (!line) return;
     var parsed = line.replace(TABLE_ROW_WRAP_REGEXP, '').split(TABLE_CELL_SPLIT);
 
@@ -457,18 +538,18 @@ function escapeRegExp(str) {
 
 function unescapeEntities(html) {
   return html
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'");
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
 }
 
-function identity (str) {
+function identity(str) {
   return str;
 }
 
-function compose () {
+function compose() {
   var funcs = arguments;
   return function() {
     var args = arguments;
@@ -479,13 +560,13 @@ function compose () {
   };
 }
 
-function isAllowedTabString (string) {
-  return TAB_ALLOWED_CHARACTERS.some(function (char) {
-    return string.match('^('+char+')+$');
+function isAllowedTabString(string) {
+  return TAB_ALLOWED_CHARACTERS.some(function(char) {
+    return string.match('^(' + char + ')+$');
   });
 }
 
-function sanitizeTab (tab, fallbackTab) {
+function sanitizeTab(tab, fallbackTab) {
   if (typeof tab === 'number') {
     return (new Array(tab + 1)).join(' ');
   } else if (typeof tab === 'string' && isAllowedTabString(tab)) {
