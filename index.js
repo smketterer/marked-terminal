@@ -168,7 +168,6 @@ Renderer.prototype.code = function(code, lang, escaped) {
     //things not matched by any token
     default: chalk.white,
   }
-  console.log(highlight.DEFAULT_THEME.quote)
   return section(indentify(
     this.tab,
     highlight.highlight(code, lang, this.o, this.highlightOptions)
