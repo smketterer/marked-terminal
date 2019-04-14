@@ -288,20 +288,11 @@ Renderer.prototype.link = function(href, title, text) {
 
   var out = '';
 
-  if (supportsHyperlinks.stdout) {
-    let link = ''
-    if (text) {
-      link = this.o.href(this.emoji(text))
-    } else {
-      link = this.o.href(href)
-    }
-    out = ansiEscapes.link(link, href);
+  if (text !== href) {
+    return chalk.blue.underline(href);
   } else {
-    if (hasText) out += this.emoji(text) + ' (';
-    out += this.o.href(href);
-    if (hasText) out += ')';
+    return chalk.blue.underline(text);
   }
-  return this.o.link(out);
 };
 
 Renderer.prototype.image = function(href, title, text) {
