@@ -26,11 +26,11 @@ var HARD_RETURN = '\r',
   HARD_RETURN_GFM_RE = new RegExp(HARD_RETURN + '|<br />');
 
 var defaultOptions = {
-  code: chalk.yellow,
+  code: chalk.yellowBright,
   blockquote: chalk.gray.italic,
   html: chalk.gray,
   heading: chalk.green.bold,
-  firstHeading: chalk.magenta.underline.bold,
+  firstHeading: chalk.magentaBright.underline.bold,
   hr: chalk.reset,
   listitem: chalk.reset,
   list: list,
@@ -38,7 +38,7 @@ var defaultOptions = {
   paragraph: chalk.reset,
   strong: chalk.bold,
   em: chalk.italic,
-  codespan: chalk.yellow,
+  codespan: chalk.yellowBright,
   del: chalk.dim.gray.strikethrough,
   link: chalk.blue,
   href: chalk.blue.underline,
@@ -80,38 +80,38 @@ Renderer.prototype.text = function(text) {
 };
 
 Renderer.prototype.code = function(code, lang, escaped) {
-  highlight.DEFAULT_THEME = {
+  const theme = {
     //keyword in a regular Algol-style language
-    keyword: chalk.red,
+    keyword: chalk.redBright,
     //built-in or library object (constant, class, function)
-    built_in: chalk.yellow,
+    built_in: chalk.yellowBright,
     //user-defined type in a language with first-class syntactically significant types, like
     //Haskell
-    type: chalk.yellow,
+    type: chalk.yellowBright,
     //special identifier for a built-in value ("true", "false", "null")
-    literal: chalk.magenta,
+    literal: chalk.magentaBright,
     //number, including units and modifiers, if any.
-    number: chalk.magenta,
+    number: chalk.magentaBright,
     //literal regular expression
-    regexp: chalk.magenta,
+    regexp: chalk.magentaBright,
     //literal string, character
-    string: chalk.yellow,
+    string: chalk.yellowBright,
     //parsed section inside a literal string
-    subst: chalk.white,
+    subst: chalk.whiteBright,
     //symbolic constant, interned string, goto label
-    symbol: chalk.cyan,
+    symbol: chalk.cyanBright,
     //class or class-level declaration (interfaces, traits, modules, etc)
-    class: chalk.white,
+    class: chalk.whiteBright,
     //function or method declaration
-    function: chalk.yellow,
+    function: chalk.yellowBright,
     //name of a class or a function at the place of declaration
     title: chalk.greenBright,
     //block of function arguments (parameters) at the place of declaration
-    params: chalk.white,
+    params: chalk.whiteBright,
     //comment
     comment: chalk.grey,
     //documentation markup within comments
-    doctag: chalk.white,
+    doctag: chalk.whiteBright,
     //flags, modifiers, annotations, processing instructions, preprocessor directive, etc
     meta: chalk.grey,
     //keyword or built-in within meta construct
@@ -121,20 +121,20 @@ Renderer.prototype.code = function(code, lang, escaped) {
     //heading of a section in a config file, heading in text markup
     section: chalk.greenBright,
     //XML/HTML tag
-    tag: chalk.white,
+    tag: chalk.whiteBright,
     //name of an XML tag, the first word in an s-expression
-    name: chalk.red,
+    name: chalk.redBright,
     //s-expression name from the language standard library
-    'builtin-name': chalk.yellow,
+    'builtin-name': chalk.yellowBright,
     //name of an attribute with no language defined semantics (keys in JSON, setting names in
     //.ini), also sub-attribute within another highlighted object, like XML tag
-    attr: chalk.red,
+    attr: chalk.redBright,
     //name of an attribute followed by a structured value part, like CSS properties
-    attribute: chalk.cyan,
+    attribute: chalk.cyanBright,
     //variable in a config or a template file, environment var expansion in a script
-    variable: chalk.yellow,
+    variable: chalk.yellowBright,
     //list item bullet in text markup
-    bullet: chalk.magenta,
+    bullet: chalk.magentaBright,
     //code block in text markup
     code: chalk.greenBright,
     //emphasis in text markup
@@ -142,35 +142,38 @@ Renderer.prototype.code = function(code, lang, escaped) {
     //strong emphasis in text markup
     strong: chalk.bold.grey,
     //mathematical formula in text markup
-    formula: chalk.white,
+    formula: chalk.whiteBright,
     //hyperlink in text markup
-    link: chalk.magenta,
+    link: chalk.magentaBright,
     //quotation in text markup
-    quote: chalk.magenta,
+    quote: chalk.magentaBright,
     //tag selector in CSS
-    'selector-tag': chalk.red,
+    'selector-tag': chalk.redBright,
     //#id selector in CSS
-    'selector-id': chalk.yellow,
+    'selector-id': chalk.yellowBright,
     //.class selector in CSS
     'selector-class': chalk.greenBright,
     //[attr] selector in CSS
-    'selector-attr': chalk.yellow,
+    'selector-attr': chalk.yellowBright,
     //:pseudo selector in CSS
-    'selector-pseudo': chalk.yellow,
+    'selector-pseudo': chalk.yellowBright,
     //tag of a template language
-    'template-tag': chalk.white,
+    'template-tag': chalk.whiteBright,
     //variable in a template language
-    'template-variable': chalk.yellow,
+    'template-variable': chalk.yellowBright,
     //added or changed line in a diff
-    addition: chalk.yellow,
+    addition: chalk.yellowBright,
     //deleted line in a diff
     deletion: chalk.grey,
     //things not matched by any token
-    default: chalk.white,
+    default: chalk.whiteBright,
   }
   return section(indentify(
     this.tab,
-    highlight.highlight(code, lang, this.o, this.highlightOptions)
+    highlight.highlight(code, {
+      language: lang,
+      theme: theme
+    })
   ));
 };
 
